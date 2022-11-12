@@ -1,4 +1,12 @@
-# Implement a telnet to UART bridge for retrocomputers
+# Implement a telnet to UART bridge for retrocomputers using the
+# Raspberry Pi Pico W.
+#
+# Install MicroPython from https://micropython.org/download/rp2-pico-w/rp2-pico-w-latest.uf2
+#
+# More information is here:
+# https://www.raspberrypi.com/documentation/microcontrollers/raspberry-pi-pico.html
+# https://www.raspberrypi.com/documentation/microcontrollers/micropython.html
+#
 # This version has been tested with Lee Hart's Z80 Mem­ber­ship Card
 # http://www.sunrise-ev.com/z80.htm
 #
