@@ -35,8 +35,16 @@ TELNET_PORT = 23
 TELNET_LED_PIN = 15
 UART_TX_PIN = 16
 UART_RX_PIN = 17
+NRESET_PIN = 14 # Telnet BRK will toggle
 UART_BAUDRATE = 9600 # change for different retro needs
 CONSOLE_DEBUG = False
+
+# Telnet constants
+#
+NUL = 0
+IAC = 255
+BRK = 243
+EOF = 236
 
 # The secrets file should have the following contents:
 # SSID = 'yourssidstring'
@@ -55,6 +63,9 @@ wifiLed.off()
 
 telnetLed = machine.Pin(TELNET_LED_PIN, machine.Pin.OUT)
 telnetLed.off()
+
+nReset = machine.Pin(NRESET_PIN, machine.Pin.OUT)
+nReset.on()
 
 # Country code for wireless network
 rp2.country('US')
@@ -131,14 +142,23 @@ while True:
             if telnetRxData == b'':
                 # Disconnected socket
                 connectedSocket = False
-                #client_socket.close()
             elif telnetRxData:
                 telnetRxByte = telnetRxData[0]
+                # Uncomment the below for exploration of telnet sequences
+                #print(telnetRxByte)
+                
                 # Discard telnet control characters, pass all others
-                if telnetRxByte == 0xff:
+                # TODO - filter more characters. e.g. NUL?
+                if telnetRxByte == IAC:
                     discard_count = 2
                 elif discard_count != 0:
-                    discard_count -= 1
+                    if telnetRxByte == BRK:
+                        nReset.off()
+                        time.sleep(0.1)
+                        nReset.on()
+                        discard_count = 0
+                    else:
+                        discard_count -= 1
                 else:
                     uart0.write(telnetRxData)
                     
