@@ -33,7 +33,19 @@
 # add in CRs with something like this:
 # cat hello.bas | sed 's/$/\r/' | nc "$Z80ADDRESS" 23
 #
-# TODO: may been to add delays after end of line for some platforms
+# If you connect the nReset line to your retrocomputer then you
+# can reset it by having telnet send a brk:
+# telnet> send brk
+#
+# You should also be able to send a brk with netcat by creating
+# a file containing a brk.
+#
+# The built-in LED will indicate when WiFi is connected.
+#
+# And the pin TELNET_LED_PIN can be used to light up an LED to indicate
+# when someone is connected to your retrocomputer.
+#
+# TODO: may need to add delays after end of line for some platforms
 # but this script is slow enough that it doesn't appear to need them
 # so far.
 #
@@ -45,13 +57,14 @@ import time
 
 # Parameters which you may want to change
 #
-HOSTNAME = "Z80MembershipCard" # not supported yet, pybd hardcoded
-TELNET_PORT = 23
+WIFICOUNTRY    = 'US'
+HOSTNAME       = "Z80MembershipCard" # not supported yet, pybd hardcoded
+TELNET_PORT    = 23
 TELNET_LED_PIN = 15
-UART_TX_PIN = 16
-UART_RX_PIN = 17
-NRESET_PIN = 14 # Telnet BRK will toggle
-UART_BAUDRATE = 9600 # change for different retro needs
+UART_TX_PIN    = 16
+UART_RX_PIN    = 17
+NRESET_PIN     = 14      # Telnet BRK will toggle
+UART_BAUDRATE  = 9600 # change for different retro needs
 CONSOLE_DEBUG = False
 
 # Telnet constants
@@ -83,7 +96,7 @@ nReset = machine.Pin(NRESET_PIN, machine.Pin.OUT)
 nReset.on()
 
 # Country code for wireless network
-rp2.country('US')
+rp2.country(WIFICOUNTRY)
 
 wlan = network.WLAN(network.STA_IF)
 wlan.active(True)
@@ -153,6 +166,7 @@ while True:
             # character and line delays used by the client will
             # be respected. Not sure if this is a good idea, might
             # want to switch to readline and implement delays locally
+            #
             telnetRxData = client_file.read(1)
             if telnetRxData == b'':
                 # Disconnected socket
@@ -163,7 +177,8 @@ while True:
                 #print(telnetRxByte)
                 
                 # Discard telnet control characters, pass all others
-                # TODO - filter more characters. e.g. NUL?
+                # TODO - filter more characters.
+                #
                 if telnetRxByte == IAC:
                     discard_count = 2
                 elif discard_count != 0:
@@ -193,7 +208,7 @@ while True:
                             writtenToSocket = 0
                             pass
                         else:
-                            # A serious problem
+                            # A serious problem has occurred
                             raise
         if CONSOLE_DEBUG: 
             print('Detected disconnected socket')
