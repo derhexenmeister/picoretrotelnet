@@ -22,6 +22,21 @@
 #
 # See https://github.com/Noltari/pico-uart-bridge/releases for UF2 files.
 #
+# One way to transfer files is to paste into telnet. By default telnet
+# will send CR & NUL for end of lines (at least under OS X.) This will
+# throw away the NUL bytes just to be safe. You can tell telnet
+# "toggle crlf" to change its behavior too.
+#
+# Another way is via nc (netcat) but note that nc will send whatever
+# characters are in the file. Under OX X and Linux this means only
+# LF will be sent and this isn't necessary enough. But you can easily
+# add in CRs with something like this:
+# cat hello.bas | sed 's/$/\r/' | nc "$Z80ADDRESS" 23
+#
+# TODO: may been to add delays after end of line for some platforms
+# but this script is slow enough that it doesn't appear to need them
+# so far.
+#
 import machine
 import network
 import rp2
@@ -159,7 +174,7 @@ while True:
                         discard_count = 0
                     else:
                         discard_count -= 1
-                else:
+                elif telnetRxByte != NUL:
                     uart0.write(telnetRxData)
                     
             # UART RX -> Telnet
